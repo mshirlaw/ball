@@ -19,7 +19,7 @@ pygame.display.set_caption( 'Moving Ball' )
 
 # create the player
 player = Ball()
-player.size=20
+player.size=10
 player.x = width/2
 player.y = height/2
 
@@ -58,22 +58,8 @@ while done==False:
 			player.x = pos[0]
 			player.y = pos[1]
 	
-	# update x position
-	if (player.x-player.size + player.x_speed) < 0:
-		player.x=player.size
-	elif (player.x + player.x_speed) > width-player.size:
-		player.x=width-player.size
-	else:
-		player.move_ball()
-
-	#update y position
-	if (player.y-player.size + player.y_speed) < 0:
-		player.y=player.size
-	elif (player.y + player.y_speed) > height-player.size:
-		player.y=height-player.size
-	else:
-		player.move_ball()
-   	
+	# move the ball
+	player.move_ball()
    	print "(%d,%d)" % (player.x,player.y)
     	
    	# clear screen
