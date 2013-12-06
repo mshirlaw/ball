@@ -1,27 +1,42 @@
 #!/usr/bin/python
-import pygame
-from ball import Ball
+import pygame, random
+from ball_sprite import BallSprite
 
 #initialise pygame
 pygame.init()
+
+# colors
+red = (255,0,0)
+black= (0,0,0)
+white=(255,255,255)
 
 # width and height to create tuple for screen size 
 width=640
 height=480
 size = (width,height)
 
-# background color
-white=(255,255,255)
-
 # initialise a window
 window = pygame.display.set_mode( size )
 pygame.display.set_caption( 'Moving Ball' )
 
+# all sprites in game
+all_sprites_list = pygame.sprite.Group()
+
+# create ball sprites
+for i in range(10):
+	# This represents a sprite
+	sp = BallSprite(black, 20)
+	# Set a random location for the sprite
+	sp.rect.x = random.randrange(50,width-50)
+	sp.rect.y = random.randrange(50,height-50) 
+	# Add the block to the list of objects
+	all_sprites_list.add(sp)	
+
 # create the player
-player = Ball()
-player.size=10
-player.x = width/2
-player.y = height/2
+player = BallSprite(red, 20)
+player.rect.x = width/2
+player.rect.y = height/2
+all_sprites_list.add(player)	
 
 # get rid of mouse cursor
 pygame.mouse.set_visible(False)
@@ -55,17 +70,18 @@ while done==False:
 				player.y_speed=0
 		elif event.type==pygame.MOUSEMOTION:
 			pos = pygame.mouse.get_pos()
-			player.x = pos[0]
-			player.y = pos[1]
+			player.rect.x = pos[0]
+			player.rect.y = pos[1]
 	
-	# move the ball
-	player.move_ball()
-   	print "(%d,%d)" % (player.x,player.y)
+	# move the player
+	player.move()
+   	print "(%d,%d)" % (player.rect.x,player.rect.y)
     	
    	# clear screen
    	window.fill(white)
 	
-	player.draw_ball(window)
+	# draw all shapes
+	all_sprites_list.draw(window)
 	
    	pygame.display.flip()
     	
