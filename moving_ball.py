@@ -12,6 +12,7 @@ class BallSprite(pygame.sprite.Sprite):
 		pygame.sprite.Sprite.__init__(self)
 		self.color=c
 		self.size=s
+		self.score=0
 		self.image = pygame.Surface([self.size,self.size])
 		self.image.fill((255,255,255))
 		self.image.set_colorkey((255,255,255))
@@ -30,6 +31,16 @@ class BallSprite(pygame.sprite.Sprite):
 		# update ycoord
 		if self.rect.y + self.y_speed >= 0 and self.rect.y + self.size + self.y_speed <= w_height:
 			self.rect.y = self.rect.y + self.y_speed
+	
+	# To allow the sprites to move down the screen
+	def update(self):
+		s=pygame.display.get_surface()
+		w_width=pygame.Surface.get_width(s)
+		w_height=pygame.Surface.get_height(s)
+		self.rect.y += 5
+		if self.rect.y > w_height:
+			self.rect.y=-w_height/10
+			self.rect.x=random.randrange(0,width)
 
 #initialise pygame
 pygame.init()
@@ -38,6 +49,8 @@ pygame.init()
 red = (255,0,0)
 black= (0,0,0)
 white=(255,255,255)
+lives = 3
+score=0
 
 # width and height to create tuple for screen size 
 width=640
@@ -51,20 +64,25 @@ pygame.display.set_caption( 'Moving Ball' )
 # all sprites in game
 all_sprites_list = pygame.sprite.Group()
 
+# all enemies in game
+enemy_list = pygame.sprite.Group()
+
+
 # create ball sprites
-for i in range(10):
+for i in range(50):
 	# This represents a sprite
 	sp = BallSprite(black, 20)
 	# Set a random location for the sprite
-	sp.rect.x = random.randrange(50,width-50)
-	sp.rect.y = random.randrange(50,height-50) 
+	sp.rect.x = random.randrange(0,width)
+	sp.rect.y = random.randrange(0,height-height/5) 
 	# Add the block to the list of objects
-	all_sprites_list.add(sp)	
+	all_sprites_list.add(sp)
+	enemy_list.add(sp)
 
 # create the player
 player = BallSprite(red, 20)
 player.rect.x = width/2
-player.rect.y = height/2
+player.rect.y = height - height/10
 all_sprites_list.add(player)	
 
 # get rid of mouse cursor
@@ -74,11 +92,11 @@ pygame.mouse.set_visible(False)
 clock = pygame.time.Clock()
 
 # game loop, wait for user to click exit
-done=False
-while done==False:
+game_over=False
+while game_over==False:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
-			done = True
+			game_over = True
 		elif event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_LEFT:
 				player.x_speed=-3
@@ -97,20 +115,30 @@ while done==False:
 				player.y_speed=0
 			elif event.key == pygame.K_DOWN:
 				player.y_speed=0
-		elif event.type==pygame.MOUSEMOTION:
-			pos = pygame.mouse.get_pos()
-			player.rect.x = pos[0]
-			player.rect.y = pos[1]
 	
 	# move the player
 	player.move()
-   	print "(%d,%d)" % (player.rect.x,player.rect.y)
-    	
+   	#print "(%d,%d)" % (player.rect.x,player.rect.y)
+    
+    # See if the player has collided with anything
+	enemy_hit_list = pygame.sprite.spritecollide(player,enemy_list,True)  
+   	
+   	# Remove the enemy and decrement lives
+   	for enemy in enemy_hit_list:
+   		lives=lives-1
+   		print "Hit an enemy! You have %d lives left!" % lives
+   		if lives == 0:
+   			print "You died, game over!"
+   			game_over=True
+   	
    	# clear screen
    	window.fill(white)
+
+	#move enemies down screen 
+	enemy_list.update()
 	
 	# draw all shapes
-	all_sprites_list.draw(window)
+	all_sprites_list.draw(window)	
 	
    	pygame.display.flip()
     	
