@@ -47,6 +47,34 @@ class BallSprite(pygame.sprite.Sprite):
 			self.rect.x=random.randrange(0,width)
 			self.update_speed = random.randrange(2,5)
 
+class TitleSprite(pygame.sprite.Sprite):
+	"""A class to represent text on the screen"""
+	w=0
+	h=0
+	main=True
+	def __init__(self, w_width, w_height, flag):
+		pygame.sprite.Sprite.__init__(self)
+		self.w=w_width
+		self.h=w_height
+		self.main=flag
+		self.font = pygame.font.Font(None, 50)
+		self.text = "Raining Balls"
+		self.renderTitle()
+
+	def renderTitle(self):
+		self.image = self.font.render( self.text, 1, (255,255,255))
+		self.rect  = self.image.get_rect()
+		if self.main:
+			self.rect.move_ip( (0,self.h-self.image.get_height()))
+		else:
+			self.font = pygame.font.Font(None, 30)
+			self.rect.move_ip( (self.w-self.image.get_width(),self.h-self.image.get_height()))
+
+	def update(self,new_title):
+		self.text=new_title
+		self.renderTitle()
+
+
 #initialise pygame
 pygame.init()
 
@@ -54,6 +82,7 @@ pygame.init()
 red = (255,0,0)
 black= (0,0,0)
 white=(255,255,255)
+green = (0,255,0)
 
 # width and height to create tuple for screen size 
 width=640
@@ -62,7 +91,7 @@ size = (width,height)
 
 # initialise a window
 window = pygame.display.set_mode( size )
-pygame.display.set_caption( 'Moving Ball' )
+pygame.display.set_caption( "Raining Balls" )
 
 # all sprites in game
 all_sprites_list = pygame.sprite.Group()
@@ -70,11 +99,13 @@ all_sprites_list = pygame.sprite.Group()
 # all enemies in game
 enemy_list = pygame.sprite.Group()
 
+# all titles in game
+title_list = pygame.sprite.Group()
 
 # create ball sprites
 for i in range(50):
 	# This represents a sprite
-	sp = BallSprite(black, 20)
+	sp = BallSprite(green, 20)
 	# Set a random location for the sprite
 	sp.rect.x = random.randrange(0,width)
 	sp.rect.y = random.randrange(0,height-height/5) 
@@ -88,6 +119,13 @@ player.rect.x = width/2
 player.rect.y = height - height/10
 all_sprites_list.add(player)	
 
+# create a title
+title = TitleSprite(width,height,True)
+title_list.add(title)	
+scoreSprite = TitleSprite(width,height,False)
+title_list.add(scoreSprite)	
+
+		
 # get rid of mouse cursor
 pygame.mouse.set_visible(False)
 
@@ -135,13 +173,18 @@ while game_over==False:
    			game_over=True
    	
    	# clear screen
-   	window.fill(white)
+   	window.fill(black)
 
 	#move enemies down screen 
 	enemy_list.update()
 	
 	# draw all shapes
 	all_sprites_list.draw(window)	
+	title_list.draw(window)
+	
+	# update score
+	player.score=player.score+1
+	scoreSprite.update("Score: "+str(player.score))
 	
    	pygame.display.flip()
     	
