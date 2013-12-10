@@ -4,4 +4,5 @@ A simple animation test written in python using the pygame library. Use the arro
 ##Requirements
 Requires the pygame library which can be downloaded [here](http://www.pygame.org/ "PyGame").
 
-![alt screenshot](img.jpg "Screen Shot")
+##Screen Shot
+![alt screenshot](img.png "Screen Shot")
