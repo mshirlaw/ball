@@ -6,13 +6,17 @@ class BallSprite(pygame.sprite.Sprite):
 	# Ball attributes
 	x_speed = 0
 	y_speed = 0
-	
+	update_speed=2
+	lives = 0
+	score=0
+
 	# Constructor
 	def __init__(self, c, s):
 		pygame.sprite.Sprite.__init__(self)
 		self.color=c
 		self.size=s
 		self.score=0
+		self.lives=3
 		self.image = pygame.Surface([self.size,self.size])
 		self.image.fill((255,255,255))
 		self.image.set_colorkey((255,255,255))
@@ -37,10 +41,11 @@ class BallSprite(pygame.sprite.Sprite):
 		s=pygame.display.get_surface()
 		w_width=pygame.Surface.get_width(s)
 		w_height=pygame.Surface.get_height(s)
-		self.rect.y += 5
+		self.rect.y += self.update_speed
 		if self.rect.y > w_height:
 			self.rect.y=-w_height/10
 			self.rect.x=random.randrange(0,width)
+			self.update_speed = random.randrange(2,5)
 
 #initialise pygame
 pygame.init()
@@ -49,8 +54,6 @@ pygame.init()
 red = (255,0,0)
 black= (0,0,0)
 white=(255,255,255)
-lives = 3
-score=0
 
 # width and height to create tuple for screen size 
 width=640
@@ -125,9 +128,9 @@ while game_over==False:
    	
    	# Remove the enemy and decrement lives
    	for enemy in enemy_hit_list:
-   		lives=lives-1
-   		print "Hit an enemy! You have %d lives left!" % lives
-   		if lives == 0:
+   		player.lives=player.lives-1
+   		print "Hit an enemy! You have %d lives left!" % player.lives
+   		if player.lives == 0:
    			print "You died, game over!"
    			game_over=True
    	
