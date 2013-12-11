@@ -1,3 +1,9 @@
+#########################################################################
+#																		#
+#					Moving Balls ~ mshirlaw								#
+#																		#
+#########################################################################
+
 #!/usr/bin/python
 import pygame, random
 
@@ -6,7 +12,9 @@ class BallSprite(pygame.sprite.Sprite):
 	# Ball attributes
 	x_speed = 0
 	y_speed = 0
-	update_speed=2
+	update_speed=0
+	min_speed=0
+	yd=0
 	lives = 0
 	score=0
 
@@ -16,7 +24,10 @@ class BallSprite(pygame.sprite.Sprite):
 		self.color=c
 		self.size=s
 		self.score=0
-		self.lives=3
+		self.lives=5
+		self.update_speed=2
+		self.min_speed=2
+		self.yd=1
 		self.image = pygame.Surface([self.size,self.size])
 		self.image.fill((255,255,255))
 		self.image.set_colorkey((255,255,255))
@@ -41,11 +52,21 @@ class BallSprite(pygame.sprite.Sprite):
 		s=pygame.display.get_surface()
 		w_width=pygame.Surface.get_width(s)
 		w_height=pygame.Surface.get_height(s)
-		self.rect.y += self.update_speed
+		self.rect.y += self.update_speed*self.yd
 		if self.rect.y > w_height:
 			self.rect.y=-w_height/10
 			self.rect.x=random.randrange(0,width)
-			self.update_speed = random.randrange(2,5)
+			self.update_speed = random.randint(self.min_speed,6)
+		elif self.rect.y < 0-w_height/10:
+			self.rect.y=w_height
+			self.rect.x=random.randrange(0,width)
+			self.update_speed = random.randint(self.min_speed,6)
+
+	# flip vertical direction and increase min speed
+	def change(self,ydir):
+		self.yd=ydir
+		if self.min_speed<5:
+			self.min_speed+=1
 
 class TitleSprite(pygame.sprite.Sprite):
 	"""A class to represent text on the screen"""
@@ -58,17 +79,17 @@ class TitleSprite(pygame.sprite.Sprite):
 		self.h=w_height
 		self.main=flag
 		self.font = pygame.font.Font(None, 50)
-		self.text = "Raining Balls"
+		self.text = "Moving Balls"
 		self.renderTitle()
 
 	def renderTitle(self):
 		self.image = self.font.render( self.text, 1, (255,255,255))
 		self.rect  = self.image.get_rect()
 		if self.main:
-			self.rect.move_ip( (0,self.h-self.image.get_height()))
+			self.rect.move_ip( (5,self.h-self.image.get_height()))
 		else:
 			self.font = pygame.font.Font(None, 30)
-			self.rect.move_ip( (self.w-self.image.get_width(),self.h-self.image.get_height()))
+			self.rect.move_ip( (self.w-5-self.image.get_width(),self.h-self.image.get_height()))
 
 	def update(self,new_title):
 		self.text=new_title
@@ -83,6 +104,7 @@ red = (255,0,0)
 black= (0,0,0)
 white=(255,255,255)
 green = (0,255,0)
+PLAYER_SPEED=4
 
 # width and height to create tuple for screen size 
 width=640
@@ -91,7 +113,7 @@ size = (width,height)
 
 # initialise a window
 window = pygame.display.set_mode( size )
-pygame.display.set_caption( "Raining Balls" )
+pygame.display.set_caption( "Moving Balls" )
 
 # all sprites in game
 all_sprites_list = pygame.sprite.Group()
@@ -140,22 +162,22 @@ while game_over==False:
 			game_over = True
 		elif event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_LEFT:
-				player.x_speed=-3
+				player.x_speed=-PLAYER_SPEED
 			elif event.key == pygame.K_RIGHT:
-				player.x_speed=3
+				player.x_speed=PLAYER_SPEED
 			elif event.key == pygame.K_UP:
-				player.y_speed=-3
+				player.y_speed=-PLAYER_SPEED
 			elif event.key == pygame.K_DOWN:
-				player.y_speed=3
+				player.y_speed=PLAYER_SPEED
 		elif event.type == pygame.KEYUP:
 			if event.key == pygame.K_LEFT:
-				player.x_speed=0
+				player.x_speed=0*PLAYER_SPEED
 			elif event.key == pygame.K_RIGHT:
-				player.x_speed=0
+				player.x_speed=0*PLAYER_SPEED
 			elif event.key == pygame.K_UP:
-				player.y_speed=0
+				player.y_speed=0*PLAYER_SPEED
 			elif event.key == pygame.K_DOWN:
-				player.y_speed=0
+				player.y_speed=0*PLAYER_SPEED
 	
 	# move the player
 	player.move()
@@ -185,7 +207,21 @@ while game_over==False:
 	# update score
 	player.score=player.score+1
 	scoreSprite.update("Score: "+str(player.score))
-	
+
+	# flip vertical direction
+	if player.score==500:
+		for enemy in enemy_list:
+			enemy.change(-1)
+	elif player.score==1000:
+		for enemy in enemy_list:
+			enemy.change(1)
+	elif player.score==1500:
+		for enemy in enemy_list:
+			enemy.change(-1)
+	elif player.score==2000:
+		for enemy in enemy_list:
+			enemy.change(1)
+
    	pygame.display.flip()
     	
    	clock.tick(60)
