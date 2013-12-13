@@ -1,8 +1,8 @@
-############################################################
-#															#
-#			Moving Balls ~ mshirlaw							#
-#															#
-#############################################################
+#####################################
+#									#
+#	Moving Balls ~ mshirlaw			#
+#									#
+#####################################
 
 #!/usr/bin/python
 import pygame, random
@@ -72,12 +72,12 @@ class TitleSprite(pygame.sprite.Sprite):
 	"""A class to represent text on the screen"""
 	w=0
 	h=0
-	main=True
-	def __init__(self, w_width, w_height, flag):
+	title_id=1
+	def __init__(self, w_width, w_height, id):
 		pygame.sprite.Sprite.__init__(self)
 		self.w=w_width
 		self.h=w_height
-		self.main=flag
+		self.title_id=id
 		self.font = pygame.font.Font(None, 50)
 		self.text = "Moving Balls"
 		self.renderTitle()
@@ -85,9 +85,12 @@ class TitleSprite(pygame.sprite.Sprite):
 	def renderTitle(self):
 		self.image = self.font.render( self.text, 1, (255,255,255))
 		self.rect  = self.image.get_rect()
-		if self.main:
+		if self.title_id == 1:
 			self.rect.move_ip( (5,self.h-self.image.get_height()))
-		else:
+		elif self.title_id == 2:
+			self.font = pygame.font.Font(None, 30)
+			self.rect.move_ip( (self.w-5-self.image.get_width(),self.h-self.image.get_height()-self.image.get_height()))
+		elif self.title_id == 3:
 			self.font = pygame.font.Font(None, 30)
 			self.rect.move_ip( (self.w-5-self.image.get_width(),self.h-self.image.get_height()))
 
@@ -95,6 +98,31 @@ class TitleSprite(pygame.sprite.Sprite):
 		self.text=new_title
 		self.renderTitle()
 
+# get previous high score
+def loadHighScore():
+	f=open("high_score.txt", "r")
+	highest=f.read()
+	f.close()
+	if highest=="":
+		return 0
+	else:
+		return int(highest)
+
+# save new high score
+def saveHighScore(newScore):
+	f=open("high_score.txt", "r")
+	current = f.read()
+	f.close()
+	f=open("high_score.txt", "w")
+	if current == "":
+		currentInt=0
+	else:
+		currentInt = int(current)
+	if newScore > currentInt:
+		f.write("%d" % newScore)
+	else:
+		f.write("%d" % currentInt)
+	f.close()
 
 #initialise pygame
 pygame.init()
@@ -142,14 +170,22 @@ player.rect.y = height - height/10
 all_sprites_list.add(player)	
 
 # create a title
-title = TitleSprite(width,height,True)
+title = TitleSprite(width,height,1)
 title_list.add(title)	
-scoreSprite = TitleSprite(width,height,False)
+
+# create a sprite for the score
+scoreSprite = TitleSprite(width,height,2)
 title_list.add(scoreSprite)	
 
+# high score sprite
+highScore = TitleSprite(width,height,3)
+title_list.add(highScore)	
 		
 # get rid of mouse cursor
 pygame.mouse.set_visible(False)
+
+# load high score
+high = loadHighScore()
 
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
@@ -207,7 +243,10 @@ while game_over==False:
 	# update score
 	player.score=player.score+1
 	scoreSprite.update("Score: "+str(player.score))
-
+	
+	# print high score
+	highScore.update("High Score: "+str(high))
+	
 	# flip vertical direction
 	if player.score==500:
 		for enemy in enemy_list:
@@ -225,5 +264,7 @@ while game_over==False:
    	pygame.display.flip()
     	
    	clock.tick(60)
-    	
+
+saveHighScore(player.score)
+print "Score: %d" % player.score
 pygame.quit()
